@@ -18,7 +18,7 @@ $rating = $_POST['rating'];
 $released_date = $_POST['released_date'];
 
 // Update query
-$sql = "UPDATE videogames 
+$sql = "UPDATE videogames
         SET game_name='$game_name',
             game_description='$game_description',
             rating='$rating',
