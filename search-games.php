@@ -1,25 +1,51 @@
-<h1>Search results</h1>
+
+<h1>Game Search</h1>
+
+
+<hr>
+
 <?php
+include("db.php");
 
-  // Connect to database and run SQL query
-  include("db.php");
+$keywords = $_POST['keywords'] ?? '';
 
-  // Read value from form
-  $keywords = $_POST['keywords'] ?? '';  
+$sql = "SELECT * FROM videogames";
+$stmt = null;
 
-  // Run SQL query
-  $sql = "SELECT * FROM videogames 
-          WHERE game_name LIKE '%{$keywords}%' 
-          ORDER BY released_date";
-          
-  $results = mysqli_query($mysqli, $sql);
+if (!empty($keywords)) {
+    $sql .= " WHERE game_name LIKE ?
+              OR game_description LIKE ?
+              OR rating LIKE ?
+              OR released_date LIKE ?
+              ORDER BY released_date";
+
+    $search = "%" . $keywords . "%";
+    $stmt = $mysqli->prepare($sql);
+    $stmt->bind_param("ssss", $search, $search, $search, $search);
+    $stmt->execute();
+    $results = $stmt->get_result();
+} else {
+    $sql .= " ORDER BY released_date";
+    $results = mysqli_query($mysqli, $sql);
+}
 ?>
 
-<table>
-  <?php while($a_row = mysqli_fetch_assoc($results)):?>
+<table border="1" cellpadding="8">
     <tr>
-      <td><a href="game-details.php?id=<?=$a_row['game_id']?>"><?=$a_row['game_name']?></a></td>
-      <td><?=$a_row['rating']?></td>
+        <th>Game Name</th>
+        <th>Rating</th>
+        <th>Released Date</th>
     </tr>
-  <?php endwhile;?>
+
+    <?php while ($row = mysqli_fetch_assoc($results)): ?>
+        <tr>
+            <td>
+                <a href="game-details.php?id=<?= $row['game_id'] ?>">
+                    <?= htmlspecialchars($row['game_name']) ?>
+                </a>
+            </td>
+            <td><?= htmlspecialchars($row['rating']) ?></td>
+            <td><?= htmlspecialchars($row['released_date']) ?></td>
+        </tr>
+    <?php endwhile; ?>
 </table>
